@@ -100,9 +100,13 @@ function initUIEvents() {
     });
   });
 
-  // 示例加载按钮
+  // 示例加载与一键清空按钮
   document.getElementById('btn-demo-cu').addEventListener('click', () => loadDemo('cu'));
   document.getElementById('btn-demo-czts').addEventListener('click', () => loadDemo('czts'));
+  const btnClearAll = document.getElementById('btn-clear-all');
+  if (btnClearAll) btnClearAll.addEventListener('click', clearAllContent);
+  const btnClearSamples = document.getElementById('btn-clear-samples');
+  if (btnClearSamples) btnClearSamples.addEventListener('click', clearSamplesContent);
 
   // 刷新与放大
   document.getElementById('btn-refresh').addEventListener('click', () => requestRender());
@@ -626,6 +630,39 @@ function renderSampleList() {
     autoPeakTargetSelect.innerHTML = opts;
     autoPeakTargetSelect.value = curVal;
   }
+}
+
+// 一键清空所有内容 (实测样品、标准卡片、晶面标注与物相图例)
+function clearAllContent() {
+  const hasContent = state.samples.length > 0 || state.pdf_cards.length > 0 || state.annotations.length > 0 || state.phase_legends.length > 0;
+  if (!hasContent) {
+    setRenderStatus('当前画布已为空', 'ready');
+    return;
+  }
+  if (!confirm('确定要一键清空当前所有样品曲线、标准卡片、晶面标注与图例吗？\n（清空后可随时重新上传新数据或载入示例）')) {
+    return;
+  }
+  state.samples = [];
+  state.pdf_cards = [];
+  state.annotations = [];
+  state.phase_legends = [];
+
+  renderSampleList();
+  renderCardList();
+  renderAnnotationsList();
+  renderPhaseLegendList();
+  triggerAutoRender(0);
+  setRenderStatus('已清空全部内容，画布已就绪', 'ready');
+}
+
+// 仅清空实测样品
+function clearSamplesContent() {
+  if (state.samples.length === 0) return;
+  if (!confirm('确定要清空当前所有实测样品曲线吗？')) return;
+  state.samples = [];
+  renderSampleList();
+  triggerAutoRender(0);
+  setRenderStatus('已清空所有实测样品', 'ready');
 }
 
 // 渲染标准卡片列表

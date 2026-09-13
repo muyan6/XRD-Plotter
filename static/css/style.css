@@ -142,6 +142,18 @@ body {
   color: var(--text-main);
 }
 
+.btn-clear-all {
+  color: #dc2626 !important;
+  border-color: #fecaca !important;
+  background-color: #fef2f2 !important;
+}
+
+.btn-clear-all:hover {
+  color: #ffffff !important;
+  background-color: #ef4444 !important;
+  border-color: #ef4444 !important;
+}
+
 .w-100 {
   width: 100%;
 }
