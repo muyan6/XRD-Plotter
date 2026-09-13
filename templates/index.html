@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>XRD-Plotter | 科研级 XRD 堆积图交互工作台</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <!-- 顶部导航栏 -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="app-logo">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+        </svg>
+      </div>
+      <div>
+        <h1 class="app-title">XRD-Plotter <span class="badge">学术版</span></h1>
+        <p class="app-subtitle">一键生成期刊级 XRD 堆叠谱图 · 实时参数微调 · 矢量无损导出</p>
+      </div>
+    </div>
+    
+    <div class="header-actions">
+      <button class="btn btn-outline" id="btn-demo-cu">
+        <span>🔬</span> 载入示例1: 铜/氧化亚铜 (卡片对照)
+      </button>
+      <button class="btn btn-outline" id="btn-demo-czts">
+        <span>💎</span> 载入示例2: CZTS (晶面与图例)
+      </button>
+      <div class="dropdown">
+        <button class="btn btn-primary dropdown-btn" id="btn-export-menu">
+          <span>📥</span> 导出图表 ▼
+        </button>
+        <div class="dropdown-content">
+          <a href="#" data-format="png_300">📄 导出高清 PNG (300 DPI 期刊标准)</a>
+          <a href="#" data-format="png_600">🌟 导出超清 PNG (600 DPI 顶刊级)</a>
+          <a href="#" data-format="svg">⚡ 导出 SVG 矢量图 (AI/CorelDraw编辑)</a>
+          <a href="#" data-format="pdf">📑 导出 PDF 矢量文档</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- 主体工作区 -->
+  <main class="workbench-container">
+    <!-- 左侧参数调节面板 -->
+    <aside class="control-panel">
+      <!-- 顶部快速分类切换标签栏 -->
+      <div class="panel-nav-tabs">
+        <button type="button" class="nav-tab active" data-tab="all">📋 全部展开</button>
+        <button type="button" class="nav-tab" data-tab="curves">📊 样品曲线 (颜色/粗细/间距)</button>
+        <button type="button" class="nav-tab" data-tab="annotations">🏷️ 晶面与图例</button>
+        <button type="button" class="nav-tab" data-tab="cards">📋 底部标准卡片</button>
+        <button type="button" class="nav-tab" data-tab="axes">📐 坐标轴与边框</button>
+        <button type="button" class="nav-tab" data-tab="data">📂 数据导入与存档</button>
+      </div>
+      
+      <!-- 核心板块 1: 📊 样品曲线与堆叠排版 (把作图的放在一起：线条颜色、粗细、间距、归一化) -->
+      <section class="panel-section active" data-section="curves">
+        <div class="section-header">
+          <div class="section-title">
+            <span class="icon">📊</span>
+            <span>样品曲线与堆叠排版</span>
+            <span class="count-badge" id="sample-count">0 样品</span>
+          </div>
+          <span class="arrow">▼</span>
+        </div>
+        <div class="section-body">
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label>曲线纵向间距 (Vertical Gap)</label>
+              <input type="range" id="cfg-stack-gap" min="0.05" max="1.5" step="0.02" value="0.38">
+              <span class="range-val" id="val-stack-gap">0.38</span>
+            </div>
+            <div class="form-group col-6">
+              <label>曲线峰高度缩放 (Peak Scale)</label>
+              <input type="range" id="cfg-curve-scale" min="0.2" max="1.5" step="0.05" value="0.8">
+              <span class="range-val" id="val-curve-scale">0.80</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label>全局线条粗细 (Line Width)</label>
+              <input type="range" id="cfg-line-width" min="0.5" max="3.0" step="0.1" value="1.2">
+              <span class="range-val" id="val-line-width">1.2 pt</span>
+            </div>
+            <div class="form-group col-6">
+              <label>归一化模式 (强度尺度)</label>
+              <select id="cfg-norm-mode">
+                <option value="independent" selected>各自等比缩放 (物相推荐)</option>
+                <option value="global">全局统一缩放 (真实强弱对比)</option>
+                <option value="raw">原始计数值 (不归一化)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label>样品名称横向位置 (2θ)</label>
+              <input type="number" id="cfg-sample-label-x" step="1" value="68">
+            </div>
+            <div class="form-group col-6">
+              <label>样品名称纵向高度 (避开尖峰)</label>
+              <input type="range" id="cfg-sample-label-y" min="0.05" max="0.80" step="0.02" value="0.35">
+              <span class="range-val" id="val-sample-label-y">0.35</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>数据降噪平滑 (Savitzky-Golay 滤波)</label>
+            <input type="range" id="cfg-smooth" min="0" max="25" step="2" value="0">
+            <span class="range-val" id="val-smooth">原始数据 (不平滑)</span>
+          </div>
+
+          <!-- 各样品明细：颜色、粗细、排序、名称、标签位置 -->
+          <div class="item-list-container mt-2">
+            <div class="list-label" style="display:flex; justify-content:space-between; align-items:center;">
+              <span>实测样品列表 (颜色 / 名称 / 标签 / 粗细 / 层级):</span>
+              <button class="btn-chip" id="btn-clear-samples" title="清空所有当前样品">清空样品</button>
+            </div>
+            <div id="samples-list" class="item-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 核心板块 2: 🏷️ 晶面指标 (hkl) 与右上角物相图例 -->
+      <section class="panel-section" data-section="annotations">
+        <div class="section-header">
+          <div class="section-title">
+            <span class="icon">🏷️</span>
+            <span>晶面指标 (hkl) 与物相图例</span>
+            <span class="count-badge" id="ann-count">0 标注</span>
+          </div>
+          <span class="arrow">▼</span>
+        </div>
+        <div class="section-body">
+          <div class="form-row" style="margin-bottom:6px;">
+            <div class="form-group col-6" style="margin-bottom:0;">
+              <label style="font-size:0.75rem;">找峰目标曲线</label>
+              <select id="cfg-auto-peak-target" style="padding:4px; font-size:0.78rem;">
+                <option value="top">最顶层样品 (默认)</option>
+              </select>
+            </div>
+            <div class="form-group col-6" style="margin-bottom:0;">
+              <label style="font-size:0.75rem;">灵敏度阈值 (峰高显著度)</label>
+              <input type="range" id="cfg-peak-prominence" min="0.01" max="0.12" step="0.005" value="0.035">
+              <span class="range-val" id="val-peak-prominence" style="font-size:0.7rem; width:auto;">0.035</span>
+            </div>
+          </div>
+
+          <button class="btn btn-primary w-100" id="btn-auto-peaks" style="margin-bottom:6px; justify-content:center;">
+            ⚡ 智能自动找峰 (从左到右不同图标)
+          </button>
+          
+          <div class="form-row" style="margin-bottom:8px;">
+            <button class="btn btn-sm btn-outline col-6" id="btn-snap-all-angles" title="将所有标注的角度自动对齐到真实峰顶">🎯 一键校准峰位</button>
+            <button class="btn btn-sm btn-outline col-3" id="btn-add-ann">+ 添加</button>
+            <button class="btn btn-sm btn-ghost col-3" id="btn-clear-ann">清空</button>
+          </div>
+          <p class="section-desc" style="margin-bottom:6px;">自动吸附物理峰尖，选择所属样品层级，支持修改角度/晶面/符号：</p>
+          <div id="annotations-list" class="item-list"></div>
+
+          <hr style="margin: 14px 0 10px 0; border: none; border-top: 1px dashed var(--border-color);">
+
+          <!-- 标注间距与右上角晶型图例联动 -->
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label>图标离峰顶间距 (避免遮挡)</label>
+              <input type="range" id="cfg-marker-gap" min="0.02" max="0.25" step="0.01" value="0.08">
+              <span class="range-val" id="val-marker-gap">0.08</span>
+            </div>
+            <div class="form-group col-6">
+              <label>显示右上角图例</label>
+              <select id="cfg-show-legend">
+                <option value="true" selected>显示图例</option>
+                <option value="false">隐藏图例</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>图例排列列数</label>
+            <select id="cfg-legend-ncol">
+              <option value="1">1 列纵排</option>
+              <option value="2" selected>2 列横排 (常用)</option>
+              <option value="3">3 列横排</option>
+            </select>
+          </div>
+
+          <button class="btn btn-sm btn-outline w-100 mt-1" id="btn-sync-legend">
+            🔄 从当前标注同步生成右上角图例
+          </button>
+          <div class="item-list-container mt-2">
+            <div id="legend-items-list" class="item-list"></div>
+            <button class="btn btn-sm btn-ghost w-100 mt-1" id="btn-add-legend-item">
+              + 手动添加物相图例项
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 核心板块 3: 📋 底部标准卡片 (Stick Patterns) -->
+      <section class="panel-section" data-section="cards">
+        <div class="section-header">
+          <div class="section-title">
+            <span class="icon">📋</span>
+            <span>底部 PDF 标准卡片</span>
+          </div>
+          <span class="arrow">▼</span>
+        </div>
+        <div class="section-body">
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label>最高棒比例高度</label>
+              <input type="range" id="cfg-card-scale" min="0.1" max="0.8" step="0.02" value="0.28">
+              <span class="range-val" id="val-card-scale">0.28</span>
+            </div>
+            <div class="form-group col-6">
+              <label>卡片棒线粗细</label>
+              <input type="range" id="cfg-card-lw" min="0.8" max="3.5" step="0.2" value="1.8">
+              <span class="range-val" id="val-card-lw">1.8 pt</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label>卡片名称横坐标 (2θ)</label>
+              <input type="number" id="cfg-card-label-x" step="1" value="68">
+            </div>
+            <div class="form-group col-6">
+              <label>卡片名称纵坐标 (Y高度)</label>
+              <input type="number" id="cfg-card-label-y" step="0.02" value="0.22">
+            </div>
+          </div>
+
+          <!-- 上传或录入卡片 -->
+          <div class="upload-box mt-1" id="pdf-upload-zone">
+            <input type="file" id="pdf-file-input" multiple accept=".txt,.csv,.dat">
+            <div class="upload-icon" style="font-size:1.3rem; margin-bottom:2px;">📋</div>
+            <div class="upload-text" style="font-size:0.8rem;">上传 <strong>PDF 标准卡片</strong> 文本文件 (支持批量)</div>
+          </div>
+          
+          <button class="btn btn-sm btn-ghost w-100 mt-2" id="btn-manual-card">
+            + 手动快速录入标准卡片峰位
+          </button>
+
+          <div class="item-list-container mt-2">
+            <div class="list-label" style="display:flex; justify-content:space-between; align-items:center;">
+              <span>已载入卡片清单:</span>
+              <button class="btn-chip" id="btn-clear-cards" title="清空所有当前卡片">清空卡片</button>
+            </div>
+            <div id="cards-list" class="item-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 核心板块 4: 📐 坐标轴与边框样式 -->
+      <section class="panel-section" data-section="axes">
+        <div class="section-header">
+          <div class="section-title">
+            <span class="icon">📐</span>
+            <span>坐标轴与边框样式</span>
+          </div>
+          <span class="arrow">▼</span>
+        </div>
+        <div class="section-body">
+          <div class="form-row">
+            <div class="form-group col-4">
+              <label>X轴最小值 (2θ)</label>
+              <input type="number" id="cfg-x-min" step="5" value="10">
+            </div>
+            <div class="form-group col-4">
+              <label>X轴最大值 (2θ)</label>
+              <input type="number" id="cfg-x-max" step="5" value="70">
+            </div>
+            <div class="form-group col-4">
+              <label>刻度步长 (Step)</label>
+              <input type="number" id="cfg-x-step" step="1" value="10">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>X轴名称 (横坐标标签)</label>
+            <div class="input-with-tools">
+              <input type="text" id="cfg-x-label" value="2θ(degree)">
+              <div class="quick-inserts">
+                <button type="button" class="btn-chip" data-insert="2θ">2θ</button>
+                <button type="button" class="btn-chip" data-insert="°">°</button>
+                <button type="button" class="btn-chip" data-insert="2θ / °">2θ / °</button>
+                <button type="button" class="btn-chip" data-insert="2θ (degree)">2θ (degree)</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Y轴名称 (纵坐标标签)</label>
+            <div class="input-with-tools">
+              <input type="text" id="cfg-y-label" value="Intensity (a.u.)">
+              <div class="quick-inserts">
+                <button type="button" class="btn-chip" data-insert="Intensity (a.u.)">Intensity (a.u.)</button>
+                <button type="button" class="btn-chip" data-insert="Intensity / a.u.">Intensity / a.u.</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label>刻度朝向 (Ticks)</label>
+              <select id="cfg-tick-dir">
+                <option value="in" selected>朝内 (In, Origin标准)</option>
+                <option value="out">朝外 (Out)</option>
+                <option value="inout">双向 (Both)</option>
+              </select>
+            </div>
+            <div class="form-group col-6">
+              <label>学术四面封闭框线粗细</label>
+              <input type="range" id="cfg-spine-width" min="0.8" max="3.0" step="0.2" value="1.5">
+              <span class="range-val" id="val-spine-width">1.5 pt</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label>学术主字体</label>
+              <select id="cfg-font-family">
+                <option value="Times New Roman" selected>Times New Roman (论文标准)</option>
+                <option value="Arial">Arial (无衬线标准)</option>
+                <option value="Microsoft YaHei">微软雅黑 (中文推荐)</option>
+                <option value="SimHei">黑体 (SimHei)</option>
+              </select>
+            </div>
+            <div class="form-group col-6">
+              <label>全局字号大小</label>
+              <input type="range" id="cfg-font-size" min="9" max="18" step="0.5" value="12">
+              <span class="range-val" id="val-font-size">12 pt</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label>图表宽度 (英寸)</label>
+              <input type="number" id="cfg-fig-w" min="5" max="15" step="0.5" value="8.0">
+            </div>
+            <div class="form-group col-6">
+              <label>图表高度 (英寸)</label>
+              <input type="number" id="cfg-fig-h" min="3" max="12" step="0.5" value="5.5">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 核心板块 5: 📂 数据导入与工程方案 -->
+      <section class="panel-section" data-section="data">
+        <div class="section-header">
+          <div class="section-title">
+            <span class="icon">📂</span>
+            <span>数据文件导入与存档</span>
+          </div>
+          <span class="arrow">▼</span>
+        </div>
+        <div class="section-body">
+          <!-- 上传实测 XRD 数据 -->
+          <div class="upload-box" id="xrd-upload-zone">
+            <input type="file" id="xrd-file-input" multiple accept=".txt,.csv,.dat,.xy">
+            <div class="upload-icon">📊</div>
+            <div class="upload-text">点击或拖拽上传 <strong>XRD 实测数据</strong></div>
+            <div class="upload-hint">支持 .txt / .csv / .dat / .xy (两列: 2θ, 强度)</div>
+          </div>
+
+          <div class="form-row mt-3">
+            <button class="btn btn-outline col-6" id="btn-save-project">保存工程配置 JSON</button>
+            <button class="btn btn-outline col-6" id="btn-load-project-trigger">载入配置方案</button>
+            <input type="file" id="load-project-input" accept=".json" style="display:none">
+          </div>
+          <div class="mt-3">
+            <div class="list-label">下载标准格式示例文件参考:</div>
+            <div id="sample-download-links" class="quick-links mt-1"></div>
+          </div>
+        </div>
+      </section>
+
+    </aside>
+
+    <!-- 右侧画板预览区 -->
+    <section class="preview-area">
+      <div class="preview-toolbar">
+        <div class="preview-status">
+          <span class="status-dot"></span>
+          <span id="render-status">渲染就绪</span>
+        </div>
+        <div class="preview-tools">
+          <button class="btn btn-sm btn-ghost" id="btn-refresh" title="立即重新渲染">🔄 刷新</button>
+          <button class="btn btn-sm btn-ghost" id="btn-view-large" title="新标签页看大图">🔍 原始大图</button>
+        </div>
+      </div>
+
+      <!-- 图片展示容器 -->
+      <div class="canvas-wrapper" id="canvas-wrapper">
+        <div class="plot-loading-overlay" id="loading-overlay">
+          <div class="spinner"></div>
+          <div class="loading-text">正在高质量渲染绘图...</div>
+        </div>
+        <img id="plot-image" src="" alt="XRD 堆积图预览">
+      </div>
+
+      <div class="canvas-footer">
+        <span>💡 提示：在左侧修改任何参数（如间距、曲线颜色、晶面标注、坐标轴范围），右侧图表都会<strong>毫秒级自动更新</strong>。</span>
+      </div>
+    </section>
+  </main>
+
+  <!-- 手动录入标准卡片弹窗 -->
+  <div class="modal-overlay" id="manual-card-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>手动录入 PDF 标准卡片</h3>
+        <button class="modal-close" id="btn-close-modal">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>卡片名称 / 物相说明</label>
+          <input type="text" id="manual-card-name" placeholder="例如: Cu PDF#04-0836 或 CZTS">
+        </div>
+        <div class="form-group">
+          <label>棒线颜色</label>
+          <input type="color" id="manual-card-color" value="#cc0000">
+        </div>
+        <div class="form-group">
+          <label>峰位与强度列表 (每行一个峰，或用逗号隔开)</label>
+          <textarea id="manual-card-text" rows="6" placeholder="格式1 (每行: 角度 强度):
+28.53  100
+47.33  55
+56.18  25
+
+或格式2 (逗号隔开):
+28.53:100, 47.33:55, 56.18:25"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" id="btn-cancel-modal">取消</button>
+        <button class="btn btn-primary" id="btn-confirm-modal">确认添加卡片</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
