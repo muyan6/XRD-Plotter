@@ -55,14 +55,99 @@
       <!-- 顶部快速分类切换标签栏 -->
       <div class="panel-nav-tabs">
         <button type="button" class="nav-tab active" data-tab="all">📋 全部展开</button>
-        <button type="button" class="nav-tab" data-tab="curves">📊 样品曲线 (颜色/粗细/间距)</button>
+        <button type="button" class="nav-tab" data-tab="data">📂 数据与卡片导入</button>
+        <button type="button" class="nav-tab" data-tab="curves">📊 样品曲线与排版</button>
         <button type="button" class="nav-tab" data-tab="annotations">🏷️ 晶面与图例</button>
-        <button type="button" class="nav-tab" data-tab="cards">📋 底部标准卡片</button>
         <button type="button" class="nav-tab" data-tab="axes">📐 坐标轴与边框</button>
-        <button type="button" class="nav-tab" data-tab="data">📂 数据导入与存档</button>
       </div>
       
-      <!-- 核心板块 1: 📊 样品曲线与堆叠排版 (把作图的放在一起：线条颜色、粗细、间距、归一化) -->
+      <!-- 核心板块 1: 📂 数据导入与 PDF 标准卡片 (XRD 实测数据 + PDF 标准卡片统一导入) -->
+      <section class="panel-section active" data-section="data">
+        <div class="section-header">
+          <div class="section-title">
+            <span class="icon">📂</span>
+            <span>数据导入与 PDF 标准卡片</span>
+          </div>
+          <span class="arrow">▼</span>
+        </div>
+        <div class="section-body">
+          <!-- 1. 实测 XRD 数据上传 -->
+          <div style="font-weight: 600; font-size: 0.82rem; margin-bottom: 6px; color: #1e293b; display: flex; align-items: center; gap: 6px;">
+            <span>📊</span> 实测 XRD 数据导入:
+          </div>
+          <div class="upload-box" id="xrd-upload-zone" style="margin-bottom: 12px;">
+            <input type="file" id="xrd-file-input" multiple accept=".txt,.csv,.dat,.xy">
+            <div class="upload-icon">📊</div>
+            <div class="upload-text">点击或拖拽上传 <strong>XRD 实测数据</strong></div>
+            <div class="upload-hint">支持 .txt / .csv / .dat / .xy (两列: 2θ, 强度)</div>
+          </div>
+
+          <hr style="margin: 14px 0 12px 0; border: none; border-top: 1px dashed var(--border-color);">
+
+          <!-- 2. PDF 标准卡片导入与设置 -->
+          <div style="font-weight: 600; font-size: 0.82rem; margin-bottom: 6px; color: #1e293b; display: flex; align-items: center; gap: 6px;">
+            <span>📋</span> 底部 PDF 标准卡片 (Stick Patterns):
+          </div>
+
+          <div class="upload-box mt-1" id="pdf-upload-zone" style="margin-bottom: 8px;">
+            <input type="file" id="pdf-file-input" multiple accept=".txt,.csv,.dat">
+            <div class="upload-icon" style="font-size:1.3rem; margin-bottom:2px;">📋</div>
+            <div class="upload-text" style="font-size:0.8rem;">上传 <strong>PDF 标准卡片</strong> 文本文件 (支持批量)</div>
+          </div>
+          
+          <button class="btn btn-sm btn-ghost w-100" id="btn-manual-card" style="margin-bottom: 10px;">
+            + 手动快速录入标准卡片峰位
+          </button>
+
+          <!-- 卡片样式与位置参数 -->
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label>最高棒比例高度</label>
+              <input type="range" id="cfg-card-scale" min="0.1" max="0.8" step="0.02" value="0.28">
+              <span class="range-val" id="val-card-scale">0.28</span>
+            </div>
+            <div class="form-group col-6">
+              <label>卡片棒线粗细</label>
+              <input type="range" id="cfg-card-lw" min="0.8" max="3.5" step="0.2" value="1.8">
+              <span class="range-val" id="val-card-lw">1.8 pt</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label>卡片名称横坐标 (2θ)</label>
+              <input type="number" id="cfg-card-label-x" step="1" value="68">
+            </div>
+            <div class="form-group col-6">
+              <label>卡片名称纵坐标 (Y高度)</label>
+              <input type="number" id="cfg-card-label-y" step="0.02" value="0.22">
+            </div>
+          </div>
+
+          <div class="item-list-container mt-2">
+            <div class="list-label" style="display:flex; justify-content:space-between; align-items:center;">
+              <span>已载入卡片清单:</span>
+              <button class="btn-chip" id="btn-clear-cards" title="清空所有当前卡片">清空卡片</button>
+            </div>
+            <div id="cards-list" class="item-list"></div>
+          </div>
+
+          <hr style="margin: 14px 0 10px 0; border: none; border-top: 1px dashed var(--border-color);">
+
+          <!-- 3. 工程方案存档与示例参考 -->
+          <div class="form-row">
+            <button class="btn btn-outline col-6" id="btn-save-project">保存工程配置 JSON</button>
+            <button class="btn btn-outline col-6" id="btn-load-project-trigger">载入配置方案</button>
+            <input type="file" id="load-project-input" accept=".json" style="display:none">
+          </div>
+          <div class="mt-2">
+            <div class="list-label">下载标准格式示例文件参考:</div>
+            <div id="sample-download-links" class="quick-links mt-1"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 核心板块 2: 📊 样品曲线与堆叠排版 -->
       <section class="panel-section active" data-section="curves">
         <div class="section-header">
           <div class="section-title">
@@ -207,62 +292,7 @@
         </div>
       </section>
 
-      <!-- 核心板块 3: 📋 底部标准卡片 (Stick Patterns) -->
-      <section class="panel-section" data-section="cards">
-        <div class="section-header">
-          <div class="section-title">
-            <span class="icon">📋</span>
-            <span>底部 PDF 标准卡片</span>
-          </div>
-          <span class="arrow">▼</span>
-        </div>
-        <div class="section-body">
-          <div class="form-row">
-            <div class="form-group col-6">
-              <label>最高棒比例高度</label>
-              <input type="range" id="cfg-card-scale" min="0.1" max="0.8" step="0.02" value="0.28">
-              <span class="range-val" id="val-card-scale">0.28</span>
-            </div>
-            <div class="form-group col-6">
-              <label>卡片棒线粗细</label>
-              <input type="range" id="cfg-card-lw" min="0.8" max="3.5" step="0.2" value="1.8">
-              <span class="range-val" id="val-card-lw">1.8 pt</span>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group col-6">
-              <label>卡片名称横坐标 (2θ)</label>
-              <input type="number" id="cfg-card-label-x" step="1" value="68">
-            </div>
-            <div class="form-group col-6">
-              <label>卡片名称纵坐标 (Y高度)</label>
-              <input type="number" id="cfg-card-label-y" step="0.02" value="0.22">
-            </div>
-          </div>
-
-          <!-- 上传或录入卡片 -->
-          <div class="upload-box mt-1" id="pdf-upload-zone">
-            <input type="file" id="pdf-file-input" multiple accept=".txt,.csv,.dat">
-            <div class="upload-icon" style="font-size:1.3rem; margin-bottom:2px;">📋</div>
-            <div class="upload-text" style="font-size:0.8rem;">上传 <strong>PDF 标准卡片</strong> 文本文件 (支持批量)</div>
-          </div>
-          
-          <button class="btn btn-sm btn-ghost w-100 mt-2" id="btn-manual-card">
-            + 手动快速录入标准卡片峰位
-          </button>
-
-          <div class="item-list-container mt-2">
-            <div class="list-label" style="display:flex; justify-content:space-between; align-items:center;">
-              <span>已载入卡片清单:</span>
-              <button class="btn-chip" id="btn-clear-cards" title="清空所有当前卡片">清空卡片</button>
-            </div>
-            <div id="cards-list" class="item-list"></div>
-          </div>
-        </div>
-      </section>
-
-      <!-- 核心板块 4: 📐 坐标轴与边框样式 -->
+      <!-- 核心板块 3: 📐 坐标轴与边框样式 -->
       <section class="panel-section" data-section="axes">
         <div class="section-header">
           <div class="section-title">
@@ -353,36 +383,6 @@
               <label>图表高度 (英寸)</label>
               <input type="number" id="cfg-fig-h" min="3" max="12" step="0.5" value="5.5">
             </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- 核心板块 5: 📂 数据导入与工程方案 -->
-      <section class="panel-section" data-section="data">
-        <div class="section-header">
-          <div class="section-title">
-            <span class="icon">📂</span>
-            <span>数据文件导入与存档</span>
-          </div>
-          <span class="arrow">▼</span>
-        </div>
-        <div class="section-body">
-          <!-- 上传实测 XRD 数据 -->
-          <div class="upload-box" id="xrd-upload-zone">
-            <input type="file" id="xrd-file-input" multiple accept=".txt,.csv,.dat,.xy">
-            <div class="upload-icon">📊</div>
-            <div class="upload-text">点击或拖拽上传 <strong>XRD 实测数据</strong></div>
-            <div class="upload-hint">支持 .txt / .csv / .dat / .xy (两列: 2θ, 强度)</div>
-          </div>
-
-          <div class="form-row mt-3">
-            <button class="btn btn-outline col-6" id="btn-save-project">保存工程配置 JSON</button>
-            <button class="btn btn-outline col-6" id="btn-load-project-trigger">载入配置方案</button>
-            <input type="file" id="load-project-input" accept=".json" style="display:none">
-          </div>
-          <div class="mt-3">
-            <div class="list-label">下载标准格式示例文件参考:</div>
-            <div id="sample-download-links" class="quick-links mt-1"></div>
           </div>
         </div>
       </section>

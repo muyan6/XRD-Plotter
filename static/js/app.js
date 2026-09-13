@@ -107,6 +107,18 @@ function initUIEvents() {
   if (btnClearAll) btnClearAll.addEventListener('click', clearAllContent);
   const btnClearSamples = document.getElementById('btn-clear-samples');
   if (btnClearSamples) btnClearSamples.addEventListener('click', clearSamplesContent);
+  const btnClearCards = document.getElementById('btn-clear-cards');
+  if (btnClearCards) {
+    btnClearCards.addEventListener('click', () => {
+      if (state.pdf_cards.length === 0) return;
+      if (confirm('确定要清空当前所有标准卡片吗？')) {
+        state.pdf_cards = [];
+        renderCardList();
+        triggerAutoRender(0);
+        setRenderStatus('已清空所有标准卡片', 'ready');
+      }
+    });
+  }
 
   // 刷新与放大
   document.getElementById('btn-refresh').addEventListener('click', () => requestRender());
