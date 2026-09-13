@@ -39,6 +39,9 @@
           <a href="#" data-format="pdf">📑 导出 PDF 矢量文档</a>
         </div>
       </div>
+      <button class="btn btn-outline" id="btn-about" title="关于系统与技术支持" style="margin-left: 4px;">
+        <span>ℹ️</span> 关于
+      </button>
     </div>
   </header>
 
@@ -381,6 +384,12 @@
         </div>
       </section>
 
+      <!-- 底部机构与版权信息 -->
+      <div class="panel-footer" style="padding: 14px 16px; margin-top: 14px; font-size: 0.75rem; color: #94a3b8; text-align: center; border-top: 1px solid var(--border-color); line-height: 1.6;">
+        <span>🏛️ 为华南理工大学 b12 420 设计使用</span><br>
+        <span>如有 bug 联系: <a href="mailto:huasjj@163.com" style="color: #64748b; text-decoration: underline;">huasjj@163.com</a></span> · 
+        <a href="#" id="link-about-footer" style="color: var(--primary-color); text-decoration: none; font-weight: 500;">关于</a>
+      </div>
     </aside>
 
     <!-- 右侧画板预览区 -->
@@ -441,6 +450,50 @@
       <div class="modal-footer">
         <button class="btn btn-ghost" id="btn-cancel-modal">取消</button>
         <button class="btn btn-primary" id="btn-confirm-modal">确认添加卡片</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 关于系统弹窗 -->
+  <div class="modal-overlay" id="about-modal">
+    <div class="modal-card" style="width: 500px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 1.2rem;">ℹ️</span>
+          <h3 style="margin: 0; font-size: 1.05rem;">关于 XRD-Plotter</h3>
+          <span class="badge" style="background:#e0f2fe; color:#0369a1; font-weight:600; font-size:0.75rem; padding:2px 8px; border-radius:12px;">学术版</span>
+        </div>
+        <button class="modal-close" id="btn-close-about">✕</button>
+      </div>
+      <div class="modal-body" style="line-height: 1.7; font-size: 0.9rem; color: #334155;">
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;">
+          <p style="margin: 0 0 6px 0; font-weight: 600; color: #0f172a; font-size: 0.96rem;">
+            🏛️ 专为 <span style="color: var(--primary-color);">华南理工大学 b12 420</span> 设计使用
+          </p>
+          <p style="margin: 0; font-size: 0.84rem; color: #64748b;">
+            旨在为课题组提供期刊级 XRD 堆叠谱图对比、多样品排版、晶面指标指认与 600 DPI / SVG 矢量科研绘图支持。
+          </p>
+        </div>
+
+        <div style="margin-bottom: 14px; padding: 0 4px;">
+          <p style="margin: 0 0 4px 0; font-weight: 600; color: #1e293b;">📬 故障排查与技术支持：</p>
+          <p style="margin: 0; font-size: 0.88rem; color: #475569;">
+            如有任何 bug、改进建议或数据格式解析问题，请联系：<br>
+            📧 <strong>邮箱：</strong><a href="mailto:huasjj@163.com" style="color: var(--primary-color); font-weight: 600; text-decoration: underline;">huasjj@163.com</a>
+          </p>
+        </div>
+
+        <div style="padding: 0 4px;">
+          <p style="margin: 0 0 4px 0; font-weight: 600; color: #1e293b;">🐙 项目开源仓库：</p>
+          <p style="margin: 0; font-size: 0.88rem;">
+            <a href="https://github.com/muyan6/XRD-Plotter" target="_blank" rel="noopener noreferrer" style="color: var(--primary-color); text-decoration: none;">
+              https://github.com/muyan6/XRD-Plotter ↗
+            </a>
+          </p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" id="btn-confirm-about" style="padding: 6px 20px;">确定</button>
       </div>
     </div>
   </div>

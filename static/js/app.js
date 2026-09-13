@@ -135,6 +135,31 @@ function initUIEvents() {
   });
   document.getElementById('btn-confirm-modal').addEventListener('click', handleManualCardAdd);
 
+  // 关于弹窗
+  const aboutModal = document.getElementById('about-modal');
+  const btnAbout = document.getElementById('btn-about');
+  const btnCloseAbout = document.getElementById('btn-close-about');
+  const btnConfirmAbout = document.getElementById('btn-confirm-about');
+  const linkAboutFooter = document.getElementById('link-about-footer');
+
+  const openAbout = (e) => {
+    if (e) e.preventDefault();
+    if (aboutModal) aboutModal.classList.add('active');
+  };
+  const closeAbout = () => {
+    if (aboutModal) aboutModal.classList.remove('active');
+  };
+
+  if (btnAbout) btnAbout.addEventListener('click', openAbout);
+  if (linkAboutFooter) linkAboutFooter.addEventListener('click', openAbout);
+  if (btnCloseAbout) btnCloseAbout.addEventListener('click', closeAbout);
+  if (btnConfirmAbout) btnConfirmAbout.addEventListener('click', closeAbout);
+  if (aboutModal) {
+    aboutModal.addEventListener('click', (e) => {
+      if (e.target === aboutModal) closeAbout();
+    });
+  }
+
   // 晶面标注相关操作
   document.getElementById('btn-auto-peaks').addEventListener('click', autoDetectPeaks);
   const snapBtn = document.getElementById('btn-snap-all-angles');

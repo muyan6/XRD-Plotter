@@ -59,3 +59,11 @@ python app.py
 * `PDF_Cu_PDF_04-0836.txt`、`PDF_Cu2O_PDF_99-0041.txt`：标准卡片峰位文本
 * `Sample_540C-0.5g_Se.txt` 等：CZTS 实验系列数据
 可在网页右下角直接点击一键下载查看格式。
+
+---
+
+## 关于与技术支持
+
+* **适用对象**：专为 **华南理工大学 b12 420** 设计使用。
+* **问题反馈**：如在使用过程中遇到任何 bug、格式解析异常或有定制改进需求，欢迎联系：`huasjj@163.com`。
+* **开源仓库**：[muyan6/XRD-Plotter](https://github.com/muyan6/XRD-Plotter)
