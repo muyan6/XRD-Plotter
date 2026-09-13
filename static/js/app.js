@@ -46,8 +46,14 @@ document.addEventListener('DOMContentLoaded', () => {
   initSliders();
   loadSampleFileList();
   
-  // 默认载入示例2 (CZTS 系列，最完整丰富)
-  loadDemo('czts');
+  // 启动时默认为空工作台，仅在用户点击按钮时才载入示例
+  syncSettingsToUI();
+  renderSampleList();
+  renderCardList();
+  renderAnnotationsList();
+  renderPhaseLegendList();
+  triggerAutoRender(0);
+  setRenderStatus('工作台已就绪 · 请上传数据或载入示例', 'ready');
 });
 
 // 初始化 UI 监听事件
