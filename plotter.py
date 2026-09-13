@@ -176,12 +176,17 @@ def render_xrd_plot(config, output_format='png', dpi=300):
         x_sub = x[mask]
         y_sub = y[mask]
         
-        # 可选平滑
-        if smooth_window > 3 and smooth_window % 2 == 1 and len(y_sub) > smooth_window:
-            try:
-                y_sub = savgol_filter(y_sub, smooth_window, 2)
-            except Exception:
-                pass
+        # 可选平滑降噪 (Savitzky-Golay 滤波，保持晶体特征峰锐度与物理峰位)
+        if smooth_window and int(smooth_window) >= 2:
+            w = int(smooth_window)
+            if w % 2 == 0:
+                w += 1  # 强制转为奇数窗口 (scipy savgol_filter 强制要求)，解决偶数输入被彻底忽略的问题
+            if len(y_sub) > w:
+                try:
+                    polyorder = 2 if w >= 5 else 1
+                    y_sub = savgol_filter(y_sub, window_length=w, polyorder=polyorder)
+                except Exception as err:
+                    print(f"Savitzky-Golay smoothing error: {err}")
                 
         # 依据模式归一化
         y_min_val, y_max_val = np.min(y_sub), np.max(y_sub)

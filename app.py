@@ -7,7 +7,7 @@ import json
 import base64
 import urllib.parse
 import numpy as np
-from scipy.signal import find_peaks
+from scipy.signal import find_peaks, savgol_filter
 from flask import Flask, render_template, request, jsonify, send_file, send_from_directory
 from demo_data import generate_demo_cu_series, generate_demo_czts_series
 from plotter import parse_xrd_text, parse_pdf_card_text, render_xrd_plot
@@ -182,12 +182,26 @@ def auto_detect_peaks():
     x_sub = x[mask]
     y_sub = y[mask]
     
-    # 归一化
-    y_min, y_max = np.min(y_sub), np.max(y_sub)
-    if y_max > y_min:
-        norm_y = (y_sub - y_min) / (y_max - y_min)
+    # 平滑去噪后再进行物理特征峰识别，避免仪器毛刺假峰干扰
+    settings = data.get('settings', {})
+    smooth_w = int(settings.get('smooth_window', 0))
+    w = smooth_w if smooth_w >= 3 else 7
+    if w % 2 == 0:
+        w += 1
+    if len(y_sub) > w:
+        try:
+            y_clean = savgol_filter(y_sub, window_length=w, polyorder=2 if w >= 5 else 1)
+        except Exception:
+            y_clean = y_sub
     else:
-        norm_y = np.zeros_like(y_sub)
+        y_clean = y_sub
+
+    # 归一化
+    y_min, y_max = np.min(y_clean), np.max(y_clean)
+    if y_max > y_min:
+        norm_y = (y_clean - y_min) / (y_max - y_min)
+    else:
+        norm_y = np.zeros_like(y_clean)
         
     # 可调节灵敏度 prominence 和最小间距 distance
     prominence = float(data.get('prominence', 0.035))

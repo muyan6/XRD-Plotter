@@ -255,7 +255,15 @@ function initSliders() {
       id: 'cfg-smooth',
       valId: 'val-smooth',
       key: 'smooth_window',
-      format: (v) => v == 0 ? '原始数据 (不平滑)' : `滤波窗口: ${v}`
+      format: (v) => {
+        const val = parseInt(v) || 0;
+        if (val === 0) return '原始数据 (不平滑)';
+        const w = (val % 2 === 0) ? val + 1 : val;
+        if (w <= 9) return `轻度降噪 (窗口: ${w})`;
+        if (w <= 21) return `适度平滑 (窗口: ${w})`;
+        if (w <= 41) return `显著去噪 (窗口: ${w})`;
+        return `强力平滑 (窗口: ${w})`;
+      }
     }
   ];
 
@@ -551,7 +559,19 @@ function syncSettingsToUI() {
   document.getElementById('val-card-scale').innerText = s.card_scale;
   const clwEl = document.getElementById('val-card-lw');
   if (clwEl) clwEl.innerText = (s.card_lw || 1.8) + ' pt';
-  document.getElementById('val-smooth').innerText = s.smooth_window == 0 ? '原始数据 (不平滑)' : `滤波窗口: ${s.smooth_window}`;
+  const smoothVal = parseInt(s.smooth_window) || 0;
+  const valSmoothEl = document.getElementById('val-smooth');
+  if (valSmoothEl) {
+    if (smoothVal === 0) {
+      valSmoothEl.innerText = '原始数据 (不平滑)';
+    } else {
+      const w = (smoothVal % 2 === 0) ? smoothVal + 1 : smoothVal;
+      if (w <= 9) valSmoothEl.innerText = `轻度降噪 (窗口: ${w})`;
+      else if (w <= 21) valSmoothEl.innerText = `适度平滑 (窗口: ${w})`;
+      else if (w <= 41) valSmoothEl.innerText = `显著去噪 (窗口: ${w})`;
+      else valSmoothEl.innerText = `强力平滑 (窗口: ${w})`;
+    }
+  }
 }
 
 // 渲染样品列表
