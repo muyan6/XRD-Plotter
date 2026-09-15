@@ -328,4 +328,15 @@ if __name__ == '__main__':
     print("XRD-Plotter 正在本地启动...")
     print("访问地址: http://127.0.0.1:5000")
     print("=" * 60)
+    
+    # 自动在默认浏览器中打开页面
+    import threading
+    import webbrowser
+    import time
+    def _open_browser():
+        time.sleep(1.0)
+        webbrowser.open('http://127.0.0.1:5000')
+    threading.Thread(target=_open_browser, daemon=True).start()
+
     app.run(host='127.0.0.1', port=5000, debug=False)
+
